@@ -169,16 +169,13 @@ def parse_arguments(argv):
 
     parser.add_argument('model', type=str,
                         help='Either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
-    parser.add_argument('data_dir', type=str,
-                        help='The directory containing the images to cluster into folders.')
-    parser.add_argument('out_dir', type=str,
-                        help='The output directory where the image clusters will be saved.')
-    parser.add_argument('--image_size', type=int,
-                        help='Image size (height, width) in pixels.', default=160)
+    parser.add_argument('data_dir', type=str, help='The directory containing the images to cluster into folders.')
+    parser.add_argument('out_dir', type=str, help='The output directory where the image clusters will be saved.')
+    parser.add_argument('--image_size', type=int, help='Image size (height, width) in pixels.', default=160)
     parser.add_argument('--margin', type=int,
                         help='Margin for the crop around the bounding box (height, width) in pixels.', default=44)
-    parser.add_argument('--min_cluster_size', type=int,
-                        help='The minimum amount of pictures required for a cluster.', default=1)
+    parser.add_argument('--min_cluster_size', type=int, help='The minimum amount of pictures required for a cluster.',
+                        default=1)
     parser.add_argument('--cluster_threshold', type=float,
                         help='The minimum distance for faces to be in the same cluster', default=1.0)
     parser.add_argument('--largest_cluster_only', action='store_true',

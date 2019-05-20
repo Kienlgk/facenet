@@ -1,0 +1,23 @@
+total: 516 images
+opencv rgb:
+wrong: 5
+true: 510
+noface_error:0
+
+opencv gray:
+wrong: 1
+true: 453
+noface_error: 63
+
+scipy rgb:
+scipy gray:
+
+
+
+tuong
+opencv rgb:
+wrong >10
+true 750
+noface_error:0
+
+opencv_gray:

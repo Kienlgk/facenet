@@ -1,18 +1,18 @@
 """Performs face alignment and stores face thumbnails in the output directory."""
 # MIT License
-# 
+#
 # Copyright (c) 2016 David Sandberg
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,14 +31,17 @@ import os
 import argparse
 import tensorflow as tf
 import numpy as np
+import random
+import cv2
+from time import sleep
+
 import facenet
 import align.detect_face
-import random
-from time import sleep
+from cfg.params_config import CONFIGURATIONS as CONF
 
 
 def main(args):
-    sleep(random.random())
+    # sleep(random.random())
     output_dir = os.path.expanduser(args.output_dir)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -50,44 +53,61 @@ def main(args):
     print('Creating networks and loading parameters')
 
     with tf.Graph().as_default():
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
+        # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
+        gpu_options = CONF['tf_gpu_options']
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
         with sess.as_default():
             pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
 
-    minsize = 20  # minimum size of face
-    threshold = [0.6, 0.7, 0.7]  # three steps's threshold
-    factor = 0.709  # scale factor
+    minsize = CONF['align_minsize']  # minimum size of face
+    threshold = CONF['align_threshold']  # three steps's threshold
+    factor = CONF['align_factor']  # scale factor
 
     # Add a random key to the filename to allow alignment using multiple processes
     random_key = np.random.randint(0, high=99999)
     bounding_boxes_filename = os.path.join(output_dir, 'bounding_boxes_%05d.txt' % random_key)
 
+    ext = '.png'
     with open(bounding_boxes_filename, "w") as text_file:
         nrof_images_total = 0
         nrof_successfully_aligned = 0
         if args.random_order:
             random.shuffle(dataset)
-        for cls in dataset:
+        for cls in dataset:  # pylint: disable=too-many-nested-blocks
             output_class_dir = os.path.join(output_dir, cls.name)
             if not os.path.exists(output_class_dir):
                 os.makedirs(output_class_dir)
                 if args.random_order:
                     random.shuffle(cls.image_paths)
-            for image_path in cls.image_paths:
+            for image_path_indice, image_path in enumerate(cls.image_paths):
                 nrof_images_total += 1
                 filename = os.path.splitext(os.path.split(image_path)[1])[0]
-                output_filename = os.path.join(output_class_dir, filename + '.png')
-                print(image_path)
+                output_filename = os.path.join(output_class_dir, filename + ext)
+                output_smalldimfile = os.path.join(output_class_dir + '_error',
+                                                   'smalldim_' + str(image_path_indice + 1) + ext)
+                output_nofacefile = os.path.join(output_class_dir + '_error', filename + ext)
+                if not os.path.exists(os.path.abspath(output_class_dir) + '_error'):
+                    os.mkdir(os.path.abspath(output_class_dir) + '_error')
+                # print(image_path)
+
                 if not os.path.exists(output_filename):
                     try:
-                        img = misc.imread(image_path)
+                        # img = misc.imread(image_path, mode='P')
+                        # img = misc.imread(image_path)
+                        img = cv2.imread(image_path)
+                        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                        # img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     except (IOError, ValueError, IndexError) as e:
                         errorMessage = '{}: {}'.format(image_path, e)
                         print(errorMessage)
                     else:
                         if img.ndim < 2:
                             print('Unable to align "%s"' % image_path)
+                            print("ndim<2")
+                            # misc.imshow(img)
+                            # cv2.imwrite(output_smalldimfile, img)
+                            misc.imsave(output_nofacefile, img)
                             text_file.write('%s\n' % (output_filename))
                             continue
                         if img.ndim == 2:
@@ -138,6 +158,9 @@ def main(args):
                         else:
                             print('Unable to align "%s"' % image_path)
                             text_file.write('%s\n' % (output_filename))
+                            print("noface")
+                            # cv2.imwrite(output_nofacefile, img)
+                            misc.imsave(output_nofacefile, img)  # misc.imshow(img)
 
     print('Total number of images: %d' % nrof_images_total)
     print('Number of successfully aligned images: %d' % nrof_successfully_aligned)

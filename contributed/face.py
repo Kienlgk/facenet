@@ -40,7 +40,6 @@ from scipy import misc
 import align.detect_face
 import facenet
 
-
 gpu_memory_fraction = 0.3
 facenet_model_checkpoint = os.path.dirname(__file__) + "/../model_checkpoints/20170512-110547"
 classifier_model = os.path.dirname(__file__) + "/../model_checkpoints/my_classifier_1.pkl"
@@ -135,8 +134,7 @@ class Detection:
     def find_faces(self, image):
         faces = []
 
-        bounding_boxes, _ = align.detect_face.detect_face(image, self.minsize,
-                                                          self.pnet, self.rnet, self.onet,
+        bounding_boxes, _ = align.detect_face.detect_face(image, self.minsize, self.pnet, self.rnet, self.onet,
                                                           self.threshold, self.factor)
         for bb in bounding_boxes:
             face = Face()
