@@ -73,7 +73,6 @@ def main(args):
     classes.sort()
     # get the label strings
     label_strings = [name for name in classes if os.path.isdir(os.path.join(path_exp, name))]
-
     with tf.Graph().as_default():
 
         with tf.Session() as sess:

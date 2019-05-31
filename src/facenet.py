@@ -325,11 +325,13 @@ class ImageClassDorm():
         self.name = name
         self.image_paths = []
         self.sep = []
-
+        # print(image_paths)
         for paths in image_paths:
             self.image_paths = self.image_paths + paths
             self.sep += [len(paths)]
-        self.sep = [len(image_paths[0]), len(image_paths[1])]
+        self.sep = np.cumsum(self.sep)[:-1]
+        # self.sep = [len(image_paths[0]), len(image_paths[1])]
+        # self.sep =
         self.length = len(image_paths)
 
     def __str__(self):
@@ -341,17 +343,23 @@ class ImageClassDorm():
     def random_each_position(self):
         if self.length == 0:
             return None
-        random.shuffle(self.image_paths[:self.sep[0]])
-        random.shuffle(self.image_paths[self.sep[0]:self.sep[1]])
-        random.shuffle(self.image_paths[self.sep[1]:])
+        # random.shuffle(self.image_paths[:self.sep[0]])
+        # random.shuffle(self.image_paths[self.sep[0]:self.sep[-1]])
+        # random.shuffle(self.image_paths[self.sep[1]:])
 
     def get_image_paths_position(self, position_indice):
-        if position_indice == 0:
-            return self.image_paths[:self.sep[0]]
-        elif position_indice == 1:
-            return self.image_paths[self.sep[0]:self.sep[1]]
-        else:
-            return self.image_paths[self.sep[1]:]
+        assert position_indice >= self.length, "position_indice bigger than total positions"
+
+        if position_indice == self.length - 1:
+            return self.image_paths[self.sep[position_indice]:]
+        elif position_indice == 0:
+            return self.image_paths[:self.sep[position_indice]]
+        return self.image_paths[self.sep[position_indice-1]:self.sep[position_indice]]
+
+        # elif position_indice == 1:
+        #     return self.image_paths[self.sep[0]:self.sep[1]]
+        # else:
+        #     return self.image_paths[self.sep[1]:]
 
 class ImageClass():
     "Stores the paths to images for a given class"

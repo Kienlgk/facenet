@@ -39,6 +39,8 @@ import facenet
 import align.detect_face
 from cfg.params_config import CONFIGURATIONS as CONF
 
+align_log = open('align_log', 'w+')
+
 
 def main(argv):
     sleep(random.random())
@@ -121,10 +123,17 @@ def align_one_image(output_filename, image_path, text_file, params_dict):
     nrof_successfully_aligned = 0
     try:
         img = cv2.imread(image_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if img is not None:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        else:
+            print(image_path + " cannot be read.", file=align_log)
+            return nrof_successfully_aligned
+
     except (IOError, ValueError, IndexError) as e:
         error_message = "{}: {}".format(image_path, e)
         print(error_message)
+        return nrof_successfully_aligned
+
     else:
         if img.ndim < 2:
             print('Unable to align "%s"' % image_path, " (ndim<2)")

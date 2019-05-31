@@ -7,7 +7,7 @@ from datetime import datetime as dt
 from functools import reduce
 
 
-# Usage: -d <imgDir> -aS <labelDir>
+# Usage: -d <imgDir> -e <extension>
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-d', '--imgDir', help='Images directory')
