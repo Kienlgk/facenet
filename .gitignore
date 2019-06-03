@@ -96,3 +96,5 @@ ENV/
 \.vscode/
 
 weights
+
+*.npy
