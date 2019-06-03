@@ -98,3 +98,7 @@ ENV/
 weights
 
 *.npy
+
+data/face_formatted/
+
+logs/
